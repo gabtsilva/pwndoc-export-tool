@@ -1,5 +1,6 @@
-const { MongoClient, ObjectId} = require('mongodb');
+const { MongoClient } = require('mongodb');
 const { createObjectCsvWriter } = require('csv-writer');
+require('dotenv').config();
 const fs = require('fs');
 const {progressBar, zipFolder, findImages} = require('./utils.js');
 
@@ -13,20 +14,16 @@ console.info = function(message){
 }
 
 const auditName = process.argv[2];
-if(auditName == undefined){
+if(auditName === undefined){
   console.error("No audit name provided. For example, to retrieve the audit 'test' use 'npm start test'");
   process.exit(1);
 }
 
 async function exportToCSV() {
-  const uri = 'mongodb://localhost:27017';
-  const dbName = 'pwndoc';
-  const collectionName = 'audits';
-  const csvFilePath = 'Findings.csv';
-  const client = new MongoClient(uri);
+  const client = new MongoClient(process.env.DB_URI);
 
   const csvWriter = createObjectCsvWriter({
-    path: `${auditName}/${csvFilePath}`,
+    path: `${auditName}/${process.env.DB_BASE_FILENAME}.csv`,
     header: [
       {id:'title',title:'Name'},
       {id:'description',title:'Description'},
@@ -38,8 +35,8 @@ async function exportToCSV() {
     if(!fs.existsSync(auditName)){
       fs.mkdirSync(auditName);
     }
-    const database = client.db(dbName);
-    const collection = database.collection(collectionName);
+    const database = client.db(process.env.DB_NAME);
+    const collection = database.collection(process.env.DB_COLLECTION);
     console.info("=== Retreiving data from MongoDB ===");
     console.info(progressBar(0.2));
     let cursor = await collection.findOne({name: auditName},{projection: {_id:0,findings:1}});
