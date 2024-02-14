@@ -2,7 +2,7 @@
 
 PWNDOC Findings Export Tool is a custom tool built to export findings of a given audit as TXT. This tool creates an organized TXT file with all the basic fields and exports images in sub-folders, grouped by findings.
  
-## Install and run the TXT export tool
+## Install, configurate & run the TXT export tool
  
 Clone this respository anywhere inside the docker containers' host and cd into the cloned repository.
  
@@ -32,9 +32,17 @@ npm start test
 
 Replace "test" with the name of the audit you'd like to export. If the audit's name contains spaces, encapsulate it between simple quotes.
 
-## Run the encryption script
+## Configurate & Run the encryption script
 
 To run the script, first create a TXT file with the email or ID's of the GPG recipients
+
+Create a file called config.file and add te following lines
+
+```sh
+firstRecipient= # GPG email or ID of the first recipient
+secondRecipient= # GPG email or ID of the second recipient
+thirdRecipient= # GPG email or ID of the third recipient
+```
 
 Run the bash script using the following command
 
