@@ -18,10 +18,9 @@ npm install
 Create a .env file with the following variables
 
 ```sh   
-    DB_URI= # The URI to access the database
+    DB_URI= # The URI to access the database, for localhost use mongodb://localhost:27017
     DB_NAME= # The name of the database
-    DB_COLLECTION= # The name of the collection
-    DB_BASE_FILENAME= # The base filename for the exported TXT files
+    DB_COLLECTION= # The name of the collection your audits are stored in
 ```
 
 Run the program
@@ -32,7 +31,7 @@ npm start test
 
 ```
 
-Replace "test" with the audit's name you'd like to export as CSV.
+Replace "test" with the name of the audit you'd like to export. If the audit's name contains spaces, encapsulate it between simple quotes.
  
 ## License
  

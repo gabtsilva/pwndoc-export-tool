@@ -1,8 +1,7 @@
 const { MongoClient } = require('mongodb');
-const { createObjectCsvWriter } = require('csv-writer');
 require('dotenv').config();
 const fs = require('fs');
-const {progressBar, zipFolder, findImages} = require('./utils.js');
+const {progressBar, zipFolder, findImages, cleanCVSS, removeHTML} = require('./utils.js');
 
 // Redefined console.error function for a red output
 console.error = function(message){
@@ -15,21 +14,13 @@ console.info = function(message){
 
 const auditName = process.argv[2];
 if(auditName === undefined){
-  console.error("No audit name provided. For example, to retrieve the audit 'test' use 'npm start test'");
+  console.error("No audit name provided. To retrieve the audit 'test' use 'npm start test'");
   process.exit(1);
 }
 
 async function exportToCSV() {
   const client = new MongoClient(process.env.DB_URI);
-
-  const csvWriter = createObjectCsvWriter({
-    path: `${auditName}/${process.env.DB_BASE_FILENAME}.csv`,
-    header: [
-      {id:'title',title:'Name'},
-      {id:'description',title:'Description'},
-      {id:'observation',title:'Observation'},
-    ]
-  });
+  
   try {
     await client.connect();
     if(!fs.existsSync(auditName)){
@@ -37,29 +28,47 @@ async function exportToCSV() {
     }
     const database = client.db(process.env.DB_NAME);
     const collection = database.collection(process.env.DB_COLLECTION);
-    console.info("=== Retreiving data from MongoDB ===");
-    console.info(progressBar(0.2));
+    //console.info(progressBar(0.2));
     let cursor = await collection.findOne({name: auditName},{projection: {_id:0,findings:1}});
     if(cursor == null){
       console.clear();
       console.error(`No audit found with the name : ${auditName}`);
     }else{
       cursor = cursor.findings;
-      let index = 1;
-      console.clear();
-      console.info("=== Uploading images ===");
-      console.info(progressBar(0.4));
+      //console.clear();
+      //console.info(progressBar(0.4));
+      const properties = ['title','cvssv3','description','observation', 'poc', 'references', 'remediation','scope'];
       cursor.forEach(async (item) => {
-        item.description = await findImages(item.title, index, item.description, database);
-        item.observation = await findImages(item.title, index, item.observation, database);
-        console.log(item.observation);
-        await csvWriter.writeRecords(cursor);
-        index++;
+        item.description = removeHTML(item.description);
+        item.observation = removeHTML(item.observation);
+        item.poc = await findImages(auditName, item.title, item.poc, database);
+        item.remediation = removeHTML(item.remediation);
+        item.scope = removeHTML(item.scope);
+        const stream = fs.createWriteStream(`${auditName}/${item.title}.txt`, {flags:'w'});
+        properties.forEach((property) => {
+          if(item.hasOwnProperty(property)){
+            stream.write("=========================\n");
+            let title;
+            let text;
+            if(property == "cvssv3"){
+              title = "CVSS v3 Scoring";
+              text = cleanCVSS(item[property]);
+            }else{
+              text = item[property];
+              title = property.charAt(0).toUpperCase() + property.slice(1);
+            }
+            stream.write(`${title}\n`);
+            stream.write("=========================\n\n");
+            stream.write(`${text}\n\n`);
+
+          }
+        })
+        stream.end();
       })
     }
-    console.clear();
-    console.info("=== Creating CSV file & Zip file ===");
-    console.info(progressBar(0.6));
+    //console.clear();
+    //console.info(progressBar(0.6));
+    /*
     zipFolder(`${auditName}`, `${auditName}.zip`).then(() => {
       console.clear();
       console.info("=== Job done ===");
@@ -67,10 +76,9 @@ async function exportToCSV() {
       }).catch((error) => {
           console.error(error);
     });
+    */
   } catch (error) {
     console.error('Error:', error);
-  } finally{
-    await client.close();
   }
 }
 
