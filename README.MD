@@ -1,4 +1,3 @@
-[2:39 PM] TORRES SILVA Gabriel
 # PWNDOC Findings Export Tool
 
 PWNDOC Findings Export Tool is a custom tool built to export findings of a given audit as TXT. This tool creates an organized TXT file with all the basic fields and exports images in sub-folders, grouped by findings.
