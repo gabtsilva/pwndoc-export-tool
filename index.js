@@ -36,18 +36,22 @@ async function run() {
       console.error(`No audit found with the name : ${auditName}`);
       process.exit(1);
     }else{
+      auditName = auditName.replace(/ /g,'_');
       if(!fs.existsSync(auditName)){
         fs.mkdirSync(auditName);
       }
       cursor = cursor.findings;
       cursor.forEach(async (item) => {
+        item.title = item.title.charAt(0) === "." ? item.title.replace('.','[dot]') : item.title;
+        if(!fs.existsSync(`${auditName}/${item.title.replace(/ /g,'_')}`)){
+          fs.mkdirSync(`${auditName}/${item.title.replace(/ /g,'_')}`);
+        }
         item.description = removeHTML(item.description);
         item.observation = removeHTML(item.observation);
         item.poc = await findImages(auditName, item.title, item.poc, database);
         item.remediation = removeHTML(item.remediation);
         item.scope = removeHTML(item.scope);
-        item.title = item.title.charAt(0) === "." ? item.title.replace('.','[dot]') : item.title;
-        const stream = fs.createWriteStream(`${auditName}/${item.title.replace(/ /g,'_')}.txt`, {flags:'w'});
+        const stream = fs.createWriteStream(`${auditName}/${item.title.replace(/ /g,'_')}/${item.title.replace(/ /g,'_')}.txt`, {flags:'w'});
         properties.forEach((property) => {
           if(item.hasOwnProperty(property)){
             stream.write("=========================\n");
