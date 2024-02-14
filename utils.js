@@ -19,7 +19,7 @@ async function findImages(auditName, title, content, db){
         content = content.replace(match[0], ` (Proof_${'0'.repeat((3 - Math.abs(count).toString().length))}${count} - ${match[2]}) `);
         const imageData = document.value.split(';base64,').pop();
         const extension = document.value.substring(document.value.indexOf('/') + 1, document.value.indexOf(';'));
-        fs.writeFile(`${auditName}/${title}/Proof_${'0'.repeat((3 - Math.abs(count).toString().length))}${count}.${extension}`,imageData,{encoding:'base64'},(err) => {console.error(err)});
+        fs.writeFile(`${auditName}/${title}/Proof_${'0'.repeat((3 - Math.abs(count).toString().length))}${count}.${extension}`,imageData,{encoding:'base64'},(err) => {});
         count++;
     }
     return removeHTML(content);
@@ -37,4 +37,4 @@ const cleanCVSS = (cvss) => {
     return output;
 }
 
-module.exports = {progressBar, zipFolder, findImages, cleanCVSS, removeHTML}
+module.exports = {findImages, cleanCVSS, removeHTML}
