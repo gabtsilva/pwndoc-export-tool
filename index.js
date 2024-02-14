@@ -46,7 +46,7 @@ async function run() {
         item.poc = await findImages(auditName, item.title, item.poc, database);
         item.remediation = removeHTML(item.remediation);
         item.scope = removeHTML(item.scope);
-        item.title = item.title.charAt(0) === "." ? item.title.replace('.','DOT') : item.title;
+        item.title = item.title.charAt(0) === "." ? item.title.replace('.','[dot]') : item.title;
         const stream = fs.createWriteStream(`${auditName}/${item.title.replace(/ /g,'_')}.txt`, {flags:'w'});
         properties.forEach((property) => {
           if(item.hasOwnProperty(property)){

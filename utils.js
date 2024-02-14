@@ -11,6 +11,7 @@ async function findImages(auditName, title, content, db){
     const imgcollection = db.collection('images');
     let count = 1;
     while((match = imgRegex.exec(content)) !== null){
+        title = title.charAt(0) === '.' ? title.replace('.','[dot]') : title; 
         if(!fs.existsSync(`${auditName}/${title}`)){
             fs.mkdirSync(`${auditName}/${title}`);
         }
