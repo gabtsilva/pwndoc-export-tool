@@ -6,7 +6,7 @@ const {findImages, cleanCVSS, removeHTML} = require('./utils.js');
 const properties = ['title','cvssv3','description','observation', 'poc', 'references', 'remediation','scope'];
 const complexities = ['Easy', 'Medium','Comlpex'];
 const priorities = ['Low','Medium','High','Urgent'];
-const auditName = process.argv[2];
+let auditName = process.argv[2];
 
 console.error = function(message){
   process.stderr.write('\x1b[31m' + message + '\x1b[0m\n');
@@ -25,12 +25,12 @@ if(auditName === undefined){
 
 async function run() {
   const client = new MongoClient(process.env.DB_URI);
-  
   try {
     await client.connect();
     const database = client.db(process.env.DB_NAME);
     const collection = database.collection(process.env.DB_COLLECTION);
     let cursor = await collection.findOne({name: auditName},{projection: {_id:0,findings:1}});
+    auditName = auditName.replace(/ /g,'_');
     if(cursor == null){
       console.clear();
       console.error(`No audit found with the name : ${auditName}`);
