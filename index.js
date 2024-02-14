@@ -1,9 +1,8 @@
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
 const fs = require('fs');
-const {progressBar, zipFolder, findImages, cleanCVSS, removeHTML} = require('./utils.js');
+const {findImages, cleanCVSS, removeHTML} = require('./utils.js');
 
-// Redefined console.error function for a red output
 console.error = function(message){
   process.stderr.write('\x1b[31m' + message + '\x1b[0m\n');
 }
@@ -28,7 +27,6 @@ async function exportToCSV() {
     }
     const database = client.db(process.env.DB_NAME);
     const collection = database.collection(process.env.DB_COLLECTION);
-    //console.info(progressBar(0.2));
     let cursor = await collection.findOne({name: auditName},{projection: {_id:0,findings:1}});
     if(cursor == null){
       console.clear();
@@ -66,17 +64,7 @@ async function exportToCSV() {
         stream.end();
       })
     }
-    //console.clear();
-    //console.info(progressBar(0.6));
-    /*
-    zipFolder(`${auditName}`, `${auditName}.zip`).then(() => {
-      console.clear();
-      console.info("=== Job done ===");
-      console.info(progressBar(1));
-      }).catch((error) => {
-          console.error(error);
-    });
-    */
+    
   } catch (error) {
     console.error('Error:', error);
   }
