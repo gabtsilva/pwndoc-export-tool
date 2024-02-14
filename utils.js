@@ -6,7 +6,6 @@ function removeHTML(content){
 }
 
 async function findImages(auditName, title, content, db){
-    if(content === undefined) return content;
     const imgRegex = /<img.*?src=['"](.*?)['"].*?alt=['"](.*?)['"].*?>/g;
     let match;
     const imgcollection = db.collection('images');

@@ -4,6 +4,8 @@ const fs = require('fs');
 const {findImages, cleanCVSS, removeHTML} = require('./utils.js');
 
 const properties = ['title','cvssv3','description','observation', 'poc', 'references', 'remediation','scope'];
+const complexities = ['Easy', 'Medium','Comlpex'];
+const priorities = ['Low','Medium','High','Urgent'];
 const auditName = process.argv[2];
 
 console.error = function(message){
@@ -17,6 +19,8 @@ console.info = function(message){
 if(auditName === undefined){
   console.error("No audit name provided. To retrieve the audit 'test' use 'npm start test'");
   process.exit(1);
+}else{
+  run();
 }
 
 async function run() {
@@ -24,16 +28,17 @@ async function run() {
   
   try {
     await client.connect();
-    if(!fs.existsSync(auditName)){
-      fs.mkdirSync(auditName);
-    }
     const database = client.db(process.env.DB_NAME);
     const collection = database.collection(process.env.DB_COLLECTION);
     let cursor = await collection.findOne({name: auditName},{projection: {_id:0,findings:1}});
     if(cursor == null){
       console.clear();
       console.error(`No audit found with the name : ${auditName}`);
+      process.exit(1);
     }else{
+      if(!fs.existsSync(auditName)){
+        fs.mkdirSync(auditName);
+      }
       cursor = cursor.findings;
       cursor.forEach(async (item) => {
         item.description = removeHTML(item.description);
@@ -41,6 +46,7 @@ async function run() {
         item.poc = await findImages(auditName, item.title, item.poc, database);
         item.remediation = removeHTML(item.remediation);
         item.scope = removeHTML(item.scope);
+        item.title = item.title.charAt(0) === "." ? item.title.replace('.','DOT') : item.title;
         const stream = fs.createWriteStream(`${auditName}/${item.title.replace(/ /g,'_')}.txt`, {flags:'w'});
         properties.forEach((property) => {
           if(item.hasOwnProperty(property)){
@@ -55,6 +61,9 @@ async function run() {
               item[property].forEach((item) => {
                 text += `${item}\n`;
               })
+            }else if(property == "remediation"){
+              title = property.charAt(0).toUpperCase() + property.slice(1);
+              text = `Remediation complexity : ${complexities[item['remediationComplexity'] - 1]}\t\t| \tPriority : ${priorities[item['priority'] - 1]}\n\n${item[property]}`
             }else{
               text = item[property];
               title = property.charAt(0).toUpperCase() + property.slice(1);
@@ -75,5 +84,3 @@ async function run() {
     console.info("Folder generated. Use Ctrl+C to close the program");
   }
 }
-
-run();
