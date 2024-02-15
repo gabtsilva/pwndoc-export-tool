@@ -9,9 +9,9 @@ fi
 
 encrypt_file() {
     local file="$1"
-    local relative_path="${file#$directory/}"
+    local relative_path="$file"
     local output_path="$output_folder/$relative_path"
-    mkdir -p "$(dirname "$output_path")"
+	mkdir -p "$(dirname "$output_path")"
 
     # Read each recipient ID from the config file and store them in an array
     local recipients=()
@@ -58,7 +58,6 @@ main() {
     encrypt_directory "$directory"
 }
 
-# Check for correct number of arguments
 if [[ "$#" -ne 1 ]]; then
     echo "Usage: $0 <directory>"
     exit 1
@@ -67,8 +66,4 @@ fi
 output_folder="encrypted_files"
 mkdir -p "$output_folder"
 
-# Get the directory of the script
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# Call the main function with the provided arguments
 main "$1"
