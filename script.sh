@@ -1,13 +1,33 @@
 #!/bin/bash
-. ./config.file
+
+config_file="recipients.conf"
+
+if [ ! -f "$config_file" ]; then
+    echo "Config file $config_file not found. Please create it before running the script."
+    exit 1
+fi
 
 encrypt_file() {
     local file="$1"
     local relative_path="${file#$directory/}"
     local output_path="$output_folder/$relative_path"
-	mkdir -p "$(dirname "$output_path")"
-    	gpg --encrypt --recipient "$firstRecipient" --recipient "$secondRecipient" --recipient "$thirdRecipient" --output "$output_path.gpg" "$file"
+    mkdir -p "$(dirname "$output_path")"
+
+    # Read each recipient ID from the config file and store them in an array
+    local recipients=()
+    while IFS= read -r recipient_id; do
+        recipients+=("--recipient" "$recipient_id")
+    done < "$config_file"
+
+    if [[ $file == *.txt ]]; then
+        # Encrypt the input file with armor for .txt files
+        gpg --encrypt --armor "${recipients[@]}" --output "$output_path.asc" "$file"
+    else
+        # Encrypt the input file without armor for non-.txt files
+        gpg --encrypt "${recipients[@]}" --output "$output_path.gpg" "$file"
+    fi
 }
+
 
 encrypt_directory() {
     local directory="$1"
