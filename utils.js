@@ -41,7 +41,11 @@ const cleanCVSS = (cvss) => {
     const cvssDictionary = {AV: {N: "Network", A: "Adjacent Network", L: "Local", P: "Physical"}, AC: {H: "High", L: "Low"}, PR: {N: "None", L: "Low", H: "High"}, UI: {N: "None", R: "Required"}, S: {U: "Unchanged", C: "Changed"}, C: {N: "None", L: "Low", H: "High"}, I: {N: "None", L: "Low", H: "High"}, A: {N: "None", L: "Low", H: "High"}};
     const cvssArray = cvss.split('CVSS:3.1/')[1].split('/');
     for (let index = 0; index < 4; index++) {
-        output += `${abbreviationDictionary[cvssArray[index].split(":")[0]]}:\t\t${cvssDictionary[cvssArray[index].split(":")[0]][cvssArray[index].split(":")[1]]}\t${abbreviationDictionary[cvssArray[index+4].split(":")[0]]}:\t\t${cvssDictionary[cvssArray[index+4].split(":")[0]][cvssArray[index+4].split(":")[1]]}\n`;
+        let abbv = abbreviationDictionary[cvssArray[index].split(":")[0]].length;
+        let cvss = cvssDictionary[cvssArray[index].split(":")[0]][cvssArray[index].split(":")[1]].length;
+        let abbvSecond = abbreviationDictionary[cvssArray[index+4].split(":")[0]].length;
+        let cvssSecond = cvssDictionary[cvssArray[index+4].split(":")[0]][cvssArray[index+4].split(":")[1]].length;
+        output += `${abbreviationDictionary[cvssArray[index].split(":")[0]]}:${" ".repeat(35 - abbv - cvss)}${cvssDictionary[cvssArray[index].split(":")[0]][cvssArray[index].split(":")[1]]}\t${abbreviationDictionary[cvssArray[index+4].split(":")[0]]}:${" ".repeat(35 - abbvSecond - cvssSecond)}${cvssDictionary[cvssArray[index+4].split(":")[0]][cvssArray[index+4].split(":")[1]]}\n`;
     }
     return output;
 }

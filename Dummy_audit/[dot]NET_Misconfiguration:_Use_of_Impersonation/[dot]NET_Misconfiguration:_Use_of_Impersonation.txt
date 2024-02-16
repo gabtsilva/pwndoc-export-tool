@@ -1,0 +1,55 @@
+=========================
+Title
+=========================
+
+[dot]NET Misconfiguration: Use of Impersonation
+
+=========================
+CVSS v3 Scoring
+=========================
+
+Attack Vector:               Network	Scope:                       Changed
+Attack Complexity:               Low	Confidentiality:                High
+Privileges Required:            None	Integrity:                      High
+User Interaction:               None	Availability:                   High
+
+
+=========================
+Description
+=========================
+
+Allowing a .NET application to run at potentially escalated levels of access to the underlying operating and file systems can be dangerous and result in various forms of attacks. The intention of this functionality is to bypass authentication and access control checks within the .NET application code. Authentication is done by the underlying web server (Microsoft Internet Information Service IIS), which passes the authenticated token, or unauthenticated anonymous token, to the .NET application. Using the token to impersonate the client, the application then relies on the settings within the NTFS directories and files to control access.
+
+=========================
+Observation
+=========================
+
+
+
+=========================
+Poc
+=========================
+
+hello
+
+=========================
+References
+=========================
+
+https://cwe.mitre.org/data/definitions/520.html
+
+
+=========================
+Remediation
+=========================
+
+Remediation complexity : Medium		| 	Priority : Medium
+
+idk
+
+=========================
+Scope
+=========================
+
+omg
+
