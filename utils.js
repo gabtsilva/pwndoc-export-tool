@@ -6,23 +6,31 @@ function removeHTML(content){
 }
 
 async function findImages(auditName, title, content, db){
-    const imgRegex = /<img.*?src=['"](.*?)['"].*?alt=['"](.*?)['"].*?>/g;
-    let match;
+    if(content == undefined) return removeHTML(content);
+    const regex = /<img src="([^"]+)" alt="([^"]*)">/g;
+    const matches = [...content.matchAll(regex)];
+    const result = matches.map(match => ({tag: match[0], src: match[1], alt: match[2] }));
     const imgcollection = db.collection('images');
     let count = 1;
-    while((match = imgRegex.exec(content)) !== null){
+    let count_export = 1;
+    result.forEach(item => {
+        content = content.replace(item.tag, `\n(Proof_${'0'.repeat((3 - Math.abs(count).toString().length))}${count} - ${item.alt})\n`);
+        count++;
+    })
+    result.forEach(item => {
         title = title.charAt(0) === '.' ? title.replace('.','[dot]') : title;
         title = title.replace(/ /g,'_');
         if(!fs.existsSync(`${auditName}/${title}`)){
             fs.mkdirSync(`${auditName}/${title}`);
         }
-        let document = await imgcollection.findOne({_id:new ObjectId(match[1])});
-        content = content.replace(match[0], ` (Proof_${'0'.repeat((3 - Math.abs(count).toString().length))}${count} - ${match[2]}) `);
-        const imageData = document.value.split(';base64,').pop();
-        const extension = document.value.substring(document.value.indexOf('/') + 1, document.value.indexOf(';'));
-        fs.writeFile(`${auditName}/${title}/Proof_${'0'.repeat((3 - Math.abs(count).toString().length))}${count}.${extension}`,imageData,{encoding:'base64'},(err) => {});
-        count++;
-    }
+        let database = imgcollection.findOne({_id:new ObjectId(item.src)});
+        database.then((document) => {
+            const imageData = document.value.split(';base64,').pop();
+            const extension = document.value.substring(document.value.indexOf('/') + 1, document.value.indexOf(';'));
+            fs.writeFile(`${auditName}/${title}/Proof_${'0'.repeat((3 - Math.abs(count).toString().length))}${count_export}.${extension}`,imageData,{encoding:'base64'},(err) => {});
+            count_export++;
+        })
+    });
     return removeHTML(content);
 }
 
@@ -33,7 +41,7 @@ const cleanCVSS = (cvss) => {
     const cvssDictionary = {AV: {N: "Network", A: "Adjacent Network", L: "Local", P: "Physical"}, AC: {H: "High", L: "Low"}, PR: {N: "None", L: "Low", H: "High"}, UI: {N: "None", R: "Required"}, S: {U: "Unchanged", C: "Changed"}, C: {N: "None", L: "Low", H: "High"}, I: {N: "None", L: "Low", H: "High"}, A: {N: "None", L: "Low", H: "High"}};
     const cvssArray = cvss.split('CVSS:3.1/')[1].split('/');
     for (let index = 0; index < 4; index++) {
-        output += `${abbreviationDictionary[cvssArray[index].split(":")[0]]}:\t\t ${cvssDictionary[cvssArray[index].split(":")[0]][cvssArray[index].split(":")[1]]}\t${abbreviationDictionary[cvssArray[index+4].split(":")[0]]}:\t\t ${cvssDictionary[cvssArray[index+4].split(":")[0]][cvssArray[index+4].split(":")[1]]}\n`;
+        output += `${abbreviationDictionary[cvssArray[index].split(":")[0]]}:\t\t${cvssDictionary[cvssArray[index].split(":")[0]][cvssArray[index].split(":")[1]]}\t${abbreviationDictionary[cvssArray[index+4].split(":")[0]]}:\t\t${cvssDictionary[cvssArray[index+4].split(":")[0]][cvssArray[index+4].split(":")[1]]}\n`;
     }
     return output;
 }
