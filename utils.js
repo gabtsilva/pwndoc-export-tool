@@ -5,19 +5,15 @@ function removeHTML(content){
     return content === undefined  ? 'N/A' : content.replace(/<\/?[^>]+(>|$)/g,'');
 }
 
-async function findImages(auditName, title, content, db){
+async function replaceImages(auditName, title, content, db){
     if(content == undefined) return removeHTML(content);
     const regex = /<img src="([^"]+)" alt="([^"]*)">/g;
     const matches = [...content.matchAll(regex)];
     const result = matches.map(match => ({tag: match[0], src: match[1], alt: match[2] }));
     const imgcollection = db.collection('images');
-    let count = 1;
-    let count_export = 1;
-    result.forEach(item => {
-        content = content.replace(item.tag, `\n(Proof_${'0'.repeat((3 - Math.abs(count).toString().length))}${count} - ${item.alt})\n`);
-        count++;
-    })
-    result.forEach(item => {
+
+    result.forEach((item, index) => {
+        content = content.replace(item.tag, `\n(Proof_${'0'.repeat((3 - Math.abs(index).toString().length))}${index + 1} - ${item.alt})\n`);
         title = title.charAt(0) === '.' ? title.replace('.','[dot]') : title;
         title = title.replace(/ /g,'_');
         if(!fs.existsSync(`${auditName}/${title}`)){
@@ -27,8 +23,7 @@ async function findImages(auditName, title, content, db){
         database.then((document) => {
             const imageData = document.value.split(';base64,').pop();
             const extension = document.value.substring(document.value.indexOf('/') + 1, document.value.indexOf(';'));
-            fs.writeFile(`${auditName}/${title}/Proof_${'0'.repeat((3 - Math.abs(count).toString().length))}${count_export}.${extension}`,imageData,{encoding:'base64'},(err) => {});
-            count_export++;
+            fs.writeFile(`${auditName}/${title}/Proof_${'0'.repeat((3 - Math.abs(index).toString().length))}${index + 1}.${extension}`,imageData,{encoding:'base64'},(err) => {});
         })
     });
     return removeHTML(content);
@@ -50,4 +45,4 @@ const cleanCVSS = (cvss) => {
     return output;
 }
 
-module.exports = {findImages, cleanCVSS, removeHTML}
+module.exports = {replaceImages, cleanCVSS, removeHTML}

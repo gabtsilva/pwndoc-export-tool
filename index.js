@@ -1,9 +1,9 @@
 const { MongoClient } = require('mongodb');
 require('dotenv').config();
 const fs = require('fs');
-const {findImages, cleanCVSS, removeHTML} = require('./utils.js');
+const {replaceImages, cleanCVSS, removeHTML} = require('./utils.js');
 
-const properties = ['title','cvssv3','description','observation', 'poc', 'references', 'remediation','scope'];
+const propertiesToExport = ['title','cvssv3','description','observation', 'poc', 'references', 'remediation','scope'];
 const complexities = ['Easy', 'Medium','Comlpex'];
 const priorities = ['Low','Medium','High','Urgent'];
 let auditName = process.argv[2];
@@ -48,7 +48,7 @@ async function run() {
         }
         item.description = removeHTML(item.description);
         item.observation = removeHTML(item.observation);
-        item.poc = await findImages(auditName, item.title, item.poc, database);
+        item.poc = await replaceImages(auditName, item.title, item.poc, database);
         item.remediation = removeHTML(item.remediation);
         item.scope = removeHTML(item.scope);
         const stream = fs.createWriteStream(`${auditName}/${item.title.replace(/ /g,'_')}/${item.title.replace(/ /g,'_')}.txt`, {flags:'w'});
