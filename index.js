@@ -52,7 +52,7 @@ async function run() {
         item.remediation = removeHTML(item.remediation);
         item.scope = removeHTML(item.scope);
         const stream = fs.createWriteStream(`${auditName}/${item.title.replace(/ /g,'_')}/${item.title.replace(/ /g,'_')}.txt`, {flags:'w'});
-        properties.forEach((property) => {
+        propertiesToExport.forEach((property) => {
           if(item.hasOwnProperty(property)){
             stream.write("=========================\n");
             let title = "";
