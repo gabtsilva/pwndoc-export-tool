@@ -16,16 +16,8 @@ console.info = function(message){
   process.stderr.write('\x1b[34m' + message + '\x1b[0m\n');
 }
 
-if(auditName === undefined){
-  console.error("No audit name provided. To retrieve the audit 'test' use 'npm start test'");
-  process.exit(1);
-}else{
-  run();
-}
-
 async function run() {
   const client = new MongoClient(process.env.DB_URI);
-  try {
     await client.connect();
     const database = client.db(process.env.DB_NAME);
     const collection = database.collection(process.env.DB_COLLECTION);
@@ -79,12 +71,14 @@ async function run() {
           }
         })
         stream.end();
-      })
+      });
     }
-    
-  } catch (error) {
-    console.error('Error:', error);
-  }finally{
-    console.info("Folder generated. Use Ctrl+C to close the program");
-  }
+  return 'File generated';
+}
+
+if(auditName === undefined){
+  console.error("No audit name provided. To retrieve the audit 'test' use 'npm start test'");
+  process.exit(1);
+}else{
+  run().then(console.log).catch(console.error).finally(() => client.close());
 }
